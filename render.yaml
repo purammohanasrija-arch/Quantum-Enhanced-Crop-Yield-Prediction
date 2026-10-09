@@ -1,0 +1,63 @@
+# ==============================================================
+# Render Blueprint Specification (render.yaml)
+# Project: Q-FARM TWIN (Vite React 19 Frontend + FastAPI IBM Qiskit Backend)
+# Docs: https://render.com/docs/blueprint-spec
+# ==============================================================
+
+services:
+  # ------------------------------------------------------------
+  # 1. BACKEND API SERVICE (FastAPI + IBM Qiskit Engine)
+  # ------------------------------------------------------------
+  - type: web
+    name: q-farm-twin-backend
+    runtime: python
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    plan: free
+    autoDeploy: true
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: CORS_ORIGINS
+        value: "*"
+      - key: QUANTUM_EXECUTION_MODE
+        value: simulator
+      - key: QISKIT_SIMULATOR_BACKEND
+        value: aer_simulator
+      - key: QUANTUM_CIRCUIT_QUBITS
+        value: "3"
+      - key: QISKIT_OPTIMIZATION_LEVEL
+        value: "1"
+      # (Optional) Add your real IBM Quantum Token in the Render Dashboard:
+      # - key: QISKIT_IBM_TOKEN
+      #   sync: false
+
+  # ------------------------------------------------------------
+  # 2. FRONTEND STATIC SITE (Vite React 19 SPA)
+  # 100% Free on Render with CDN & Unlimited Bandwidth
+  # ------------------------------------------------------------
+  - type: static
+    name: q-farm-twin-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    plan: free
+    autoDeploy: true
+    routes:
+      # Single-Page Application (SPA) client-side routing rewrite rule
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: NODE_VERSION
+        value: 20.12.0
+      - key: VITE_APP_NAME
+        value: "Q-FARM TWIN"
+      - key: VITE_ENABLE_MOCK_FALLBACK
+        value: "true"
+      # Automatically links the backend service URL to the frontend
+      - key: VITE_API_BASE_URL
+        fromService:
+          type: web
+          name: q-farm-twin-backend
+          property: host
