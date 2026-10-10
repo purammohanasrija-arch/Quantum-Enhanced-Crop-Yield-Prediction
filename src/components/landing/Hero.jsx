@@ -22,7 +22,7 @@ export default function Hero() {
   const featurePills = [
     {
       title: 'Accurate Yield Prediction',
-      desc: 'QML + Hybrid Neural Ensembles',
+      desc: '4-Qubit VQR + Random Forest',
       icon: TrendingUp,
       tab: 'crop-prediction',
       color: 'from-emerald-500/20 to-green-600/20 text-emerald-300 border-emerald-500/40'

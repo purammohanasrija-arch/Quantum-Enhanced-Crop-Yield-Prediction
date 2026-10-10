@@ -69,8 +69,8 @@ export default function SustainableBanner() {
             <div className="text-xs text-emerald-300/80 mt-1">Model Confidence</div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-white">2^N</div>
-            <div className="text-xs text-emerald-300/80 mt-1">Hilbert Space Expressivity</div>
+            <div className="text-2xl sm:text-3xl font-extrabold text-white">16 States (2⁴)</div>
+            <div className="text-xs text-emerald-300/80 mt-1">Hilbert Space Dimension</div>
           </div>
         </div>
       </div>

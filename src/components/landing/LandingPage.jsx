@@ -4,6 +4,7 @@ import LandingNavbar from './LandingNavbar';
 import Hero from './Hero';
 import WhySection from './WhySection';
 import HowItWorks from './HowItWorks';
+import QuantumTechSection from './QuantumTechSection';
 import SustainableBanner from './SustainableBanner';
 import LandingFooter from './LandingFooter';
 
@@ -21,6 +22,7 @@ export default function LandingPage() {
         <Hero />
         <WhySection />
         <HowItWorks />
+        <QuantumTechSection />
         <SustainableBanner />
       </main>
       <LandingFooter />

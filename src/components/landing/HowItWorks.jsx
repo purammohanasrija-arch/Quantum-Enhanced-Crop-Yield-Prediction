@@ -10,7 +10,7 @@ export default function HowItWorks() {
     {
       num: '01',
       title: 'Upload or Input Farm Data',
-      desc: 'Import CSV/Excel files or input field sensor readings: rainfall, moisture, soil NPK, and temperatures.',
+      desc: 'Import CSV/Excel files or input field sensor readings: rainfall, temperature, soil moisture, and available nitrogen.',
       icon: Upload,
       tab: 'dataset-manager',
       color: 'bg-emerald-500'
