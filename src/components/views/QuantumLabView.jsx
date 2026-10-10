@@ -24,7 +24,9 @@ import {
   ArrowRight,
   Copy,
   Check,
-  FileCode
+  FileCode,
+  Zap,
+  Play
 } from 'lucide-react';
 import { useFarm } from '../../context/FarmContext';
 
@@ -53,8 +55,47 @@ export default function QuantumLabView() {
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [hoveredIteration, setHoveredIteration] = useState(null);
   const [autoSync, setAutoSync] = useState(true);
-  const [justSynced, setJustSynced] = useState(false);
   const [copiedQasm, setCopiedQasm] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(false);
+
+  // Trigger quantum pulse execution on manual click or input change
+  const triggerQuantumExecution = () => {
+    setIsExecuting(true);
+    setTimeout(() => setIsExecuting(false), 750);
+  };
+
+  useEffect(() => {
+    setIsExecuting(true);
+    const timer = setTimeout(() => setIsExecuting(false), 550);
+    return () => clearTimeout(timer);
+  }, [features]);
+
+  // Radian angles for the 4 input features in [0, pi]
+  const x0 = useMemo(() => (features.rainfall / 1500) * Math.PI, [features.rainfall]);
+  const x1 = useMemo(() => (features.temp / 45) * Math.PI, [features.temp]);
+  const x2 = useMemo(() => (features.soilMoisture / 100) * Math.PI, [features.soilMoisture]);
+  const x3 = useMemo(() => (features.nitrogen / 160) * Math.PI, [features.nitrogen]);
+
+  // Real-time measurement needle coordinates mapping cos(x) expectation
+  const calcNeedle = (radAngle, yCenter) => {
+    const expVal = Math.cos(radAngle);
+    const deflection = (expVal * Math.PI) / 4.5; // -40 deg to +40 deg
+    const needleLen = 16;
+    const xTip = (687 + needleLen * Math.sin(deflection)).toFixed(1);
+    const yTip = (yCenter - needleLen * Math.cos(deflection)).toFixed(1);
+    return {
+      x1: 687,
+      y1: yCenter,
+      x2: Number(xTip),
+      y2: Number(yTip),
+      expVal: (expVal >= 0 ? '+' : '') + expVal.toFixed(2)
+    };
+  };
+
+  const needleQ0 = useMemo(() => calcNeedle(x0, 72), [x0]);
+  const needleQ1 = useMemo(() => calcNeedle(x1, 132), [x1]);
+  const needleQ2 = useMemo(() => calcNeedle(x2, 192), [x2]);
+  const needleQ3 = useMemo(() => calcNeedle(x3, 252), [x3]);
 
   // Check if modified from defaults
   const isModified = useMemo(() => {
@@ -592,6 +633,26 @@ c[3] = measure q[3];`;
 
               {/* Controls: Diagram / Blocks / QASM3 Toggle & Expand/Enlarge Button */}
               <div className="flex items-center gap-2">
+                {/* Live Process Streaming Badge */}
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-[11px] text-emerald-300 font-mono shadow-xs">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="font-semibold uppercase tracking-wider text-[10px] hidden sm:inline">Live Working</span>
+                </div>
+
+                {/* Run Circuit Live Button */}
+                <button
+                  type="button"
+                  onClick={triggerQuantumExecution}
+                  disabled={isExecuting}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-cyan-500/40 bg-cyan-950/50 hover:bg-cyan-900/60 text-cyan-300 text-xs font-semibold shadow-xs transition-all cursor-pointer active:scale-95"
+                  title="Execute quantum pulse through circuit"
+                >
+                  <Zap className={`w-3.5 h-3.5 ${isExecuting ? 'animate-bounce text-yellow-300' : 'text-cyan-400'}`} />
+                  <span>{isExecuting ? 'Executing...' : 'Run Circuit'}</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => setIsCircuitExpanded(!isCircuitExpanded)}
@@ -661,7 +722,33 @@ c[3] = measure q[3];`;
                     <filter id="cnotGlow" x="-20%" y="-20%" width="140%" height="140%">
                       <feDropShadow dx="0" dy="0" stdDeviation="2" floodColor="#38bdf8" floodOpacity="0.6" />
                     </filter>
+                    <filter id="packetGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#38bdf8" floodOpacity="0.9" />
+                    </filter>
+                    <filter id="pinkPacketGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#ec4899" floodOpacity="0.9" />
+                    </filter>
+                    <filter id="tealPacketGlow" x="-30%" y="-30%" width="160%" height="160%">
+                      <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#2dd4bf" floodOpacity="0.9" />
+                    </filter>
+                    <linearGradient id="execSweep" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#38bdf8" stopOpacity="0" />
+                      <stop offset="50%" stopColor="#2dd4bf" stopOpacity="0.28" />
+                      <stop offset="100%" stopColor="#c084fc" stopOpacity="0" />
+                    </linearGradient>
                   </defs>
+
+                  {/* Real-time execution surge wave sweep */}
+                  <rect
+                    x="40"
+                    y="35"
+                    width="685"
+                    height="230"
+                    rx="14"
+                    fill="url(#execSweep)"
+                    opacity={isExecuting ? 0.75 : 0}
+                    className="transition-opacity duration-300 pointer-events-none"
+                  />
 
                   {/* Stage Region Headers */}
                   <text x="105" y="16" fill="#2dd4bf" fontSize="11" fontWeight="700" textAnchor="middle">
@@ -691,6 +778,64 @@ c[3] = measure q[3];`;
                   <line x1="50" y1="185" x2="725" y2="185" stroke="#475569" strokeWidth="2" />
                   <line x1="50" y1="245" x2="725" y2="245" stroke="#475569" strokeWidth="2" />
 
+                  {/* Live Quantum Wave Packets flowing along Wire 0 (q0 Rain) */}
+                  <circle cy="65" r="3.5" fill="#2dd4bf" filter="url(#tealPacketGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cy="65" r="2.5" fill="#38bdf8" filter="url(#packetGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="1.2s" repeatCount="indefinite" />
+                  </circle>
+
+                  {/* Live Quantum Wave Packets flowing along Wire 1 (q1 Temp) */}
+                  <circle cy="125" r="3.5" fill="#fb923c" filter="url(#packetGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="0.3s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="0.3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cy="125" r="2.5" fill="#ec4899" filter="url(#pinkPacketGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="1.5s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="1.5s" repeatCount="indefinite" />
+                  </circle>
+
+                  {/* Live Quantum Wave Packets flowing along Wire 2 (q2 Moist) */}
+                  <circle cy="185" r="3.5" fill="#38bdf8" filter="url(#packetGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="0.6s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="0.6s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cy="185" r="2.5" fill="#2dd4bf" filter="url(#tealPacketGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="1.8s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="1.8s" repeatCount="indefinite" />
+                  </circle>
+
+                  {/* Live Quantum Wave Packets flowing along Wire 3 (q3 Nitro) */}
+                  <circle cy="245" r="3.5" fill="#c084fc" filter="url(#packetGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="0.9s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="0.9s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cy="245" r="2.5" fill="#fb923c" filter="url(#pinkPacketGlow)">
+                    <animate attributeName="cx" from="50" to="664" dur="2.4s" begin="2.1s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;0.9;1;0.9;0" dur="2.4s" begin="2.1s" repeatCount="indefinite" />
+                  </circle>
+
+                  {/* Vertical CNOT entanglement pulses */}
+                  <circle cx="132" r="2" fill="#38bdf8" filter="url(#packetGlow)">
+                    <animate attributeName="cy" from="65" to="125" dur="1.2s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;1;0" dur="1.2s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="148" r="2" fill="#38bdf8" filter="url(#packetGlow)">
+                    <animate attributeName="cy" from="125" to="185" dur="1.2s" begin="0.3s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;1;0" dur="1.2s" begin="0.3s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="164" r="2" fill="#38bdf8" filter="url(#packetGlow)">
+                    <animate attributeName="cy" from="185" to="245" dur="1.2s" begin="0.6s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;1;0" dur="1.2s" begin="0.6s" repeatCount="indefinite" />
+                  </circle>
+                  <circle cx="410" r="2.5" fill="#38bdf8" filter="url(#packetGlow)">
+                    <animate attributeName="cy" from="245" to="65" dur="1.6s" begin="0.4s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="0.4s" repeatCount="indefinite" />
+                  </circle>
+
                   {/* Qubit Labels & Agronomic Feature Indicators */}
                   <g>
                     <text x="18" y="69" fill="#f8fafc" fontSize="14" fontWeight="bold">q0</text>
@@ -706,33 +851,33 @@ c[3] = measure q[3];`;
                     <text x="18" y="260" fill="#94a3b8" fontSize="8.5">Nitro</text>
                   </g>
 
-                  {/* STAGE 1: Feature Encoding Gates (Teal/Mint boxes with radians) */}
+                  {/* STAGE 1: Feature Encoding Gates (Teal/Mint boxes with dynamic radians) */}
                   {/* q0 Encode x0 */}
                   <g>
                     <rect x="58" y="47" width="58" height="36" rx="7" fill="#2dd4bf" />
-                    <text x="87" y="62" fill="#042f2e" fontSize="9.5" fontWeight="bold" textAnchor="middle">Encode</text>
-                    <text x="87" y="75" fill="#042f2e" fontSize="10.5" fontWeight="black" textAnchor="middle">x₀</text>
+                    <text x="87" y="61" fill="#042f2e" fontSize="8.5" fontWeight="bold" textAnchor="middle">Encode</text>
+                    <text x="87" y="74" fill="#042f2e" fontSize="9.5" fontWeight="black" textAnchor="middle">x₀: {x0.toFixed(2)}</text>
                   </g>
 
                   {/* q1 Encode x1 */}
                   <g>
                     <rect x="58" y="107" width="58" height="36" rx="7" fill="#2dd4bf" />
-                    <text x="87" y="122" fill="#042f2e" fontSize="9.5" fontWeight="bold" textAnchor="middle">Encode</text>
-                    <text x="87" y="135" fill="#042f2e" fontSize="10.5" fontWeight="black" textAnchor="middle">x₁</text>
+                    <text x="87" y="121" fill="#042f2e" fontSize="8.5" fontWeight="bold" textAnchor="middle">Encode</text>
+                    <text x="87" y="134" fill="#042f2e" fontSize="9.5" fontWeight="black" textAnchor="middle">x₁: {x1.toFixed(2)}</text>
                   </g>
 
                   {/* q2 Encode x2 */}
                   <g>
                     <rect x="58" y="167" width="58" height="36" rx="7" fill="#2dd4bf" />
-                    <text x="87" y="182" fill="#042f2e" fontSize="9.5" fontWeight="bold" textAnchor="middle">Encode</text>
-                    <text x="87" y="195" fill="#042f2e" fontSize="10.5" fontWeight="black" textAnchor="middle">x₂</text>
+                    <text x="87" y="181" fill="#042f2e" fontSize="8.5" fontWeight="bold" textAnchor="middle">Encode</text>
+                    <text x="87" y="194" fill="#042f2e" fontSize="9.5" fontWeight="black" textAnchor="middle">x₂: {x2.toFixed(2)}</text>
                   </g>
 
                   {/* q3 Encode x3 */}
                   <g>
                     <rect x="58" y="227" width="58" height="36" rx="7" fill="#2dd4bf" />
-                    <text x="87" y="242" fill="#042f2e" fontSize="9.5" fontWeight="bold" textAnchor="middle">Encode</text>
-                    <text x="87" y="255" fill="#042f2e" fontSize="10.5" fontWeight="black" textAnchor="middle">x₃</text>
+                    <text x="87" y="241" fill="#042f2e" fontSize="8.5" fontWeight="bold" textAnchor="middle">Encode</text>
+                    <text x="87" y="254" fill="#042f2e" fontSize="9.5" fontWeight="black" textAnchor="middle">x₃: {x3.toFixed(2)}</text>
                   </g>
 
                   {/* Linear ZZ Entanglement Couplings */}
@@ -886,32 +1031,76 @@ c[3] = measure q[3];`;
                   <g>
                     <rect x="664" y="44" width="46" height="42" rx="8" fill="#facc15" />
                     <path d="M 673 72 A 13 13 0 0 1 701 72" fill="none" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <line x1="687" y1="72" x2="695" y2="56" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <text x="687" y="82" fill="#0f172a" fontSize="8.5" fontWeight="black" textAnchor="middle">⟨Z₀⟩</text>
+                    <line
+                      x1={needleQ0.x1}
+                      y1={needleQ0.y1}
+                      x2={needleQ0.x2}
+                      y2={needleQ0.y2}
+                      stroke="#0f172a"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      className="transition-all duration-300"
+                    />
+                    <text x="687" y="81" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">
+                      ⟨Z₀⟩ {needleQ0.expVal}
+                    </text>
                   </g>
 
                   {/* q1 Measure */}
                   <g>
                     <rect x="664" y="104" width="46" height="42" rx="8" fill="#facc15" />
                     <path d="M 673 132 A 13 13 0 0 1 701 132" fill="none" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <line x1="687" y1="132" x2="695" y2="116" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <text x="687" y="142" fill="#0f172a" fontSize="8.5" fontWeight="black" textAnchor="middle">⟨Z₁⟩</text>
+                    <line
+                      x1={needleQ1.x1}
+                      y1={needleQ1.y1}
+                      x2={needleQ1.x2}
+                      y2={needleQ1.y2}
+                      stroke="#0f172a"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      className="transition-all duration-300"
+                    />
+                    <text x="687" y="141" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">
+                      ⟨Z₁⟩ {needleQ1.expVal}
+                    </text>
                   </g>
 
                   {/* q2 Measure */}
                   <g>
                     <rect x="664" y="164" width="46" height="42" rx="8" fill="#facc15" />
                     <path d="M 673 192 A 13 13 0 0 1 701 192" fill="none" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <line x1="687" y1="192" x2="695" y2="176" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <text x="687" y="202" fill="#0f172a" fontSize="8.5" fontWeight="black" textAnchor="middle">⟨Z₂⟩</text>
+                    <line
+                      x1={needleQ2.x1}
+                      y1={needleQ2.y1}
+                      x2={needleQ2.x2}
+                      y2={needleQ2.y2}
+                      stroke="#0f172a"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      className="transition-all duration-300"
+                    />
+                    <text x="687" y="201" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">
+                      ⟨Z₂⟩ {needleQ2.expVal}
+                    </text>
                   </g>
 
                   {/* q3 Measure */}
                   <g>
                     <rect x="664" y="224" width="46" height="42" rx="8" fill="#facc15" />
                     <path d="M 673 252 A 13 13 0 0 1 701 252" fill="none" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <line x1="687" y1="252" x2="695" y2="236" stroke="#0f172a" strokeWidth="2.2" strokeLinecap="round" />
-                    <text x="687" y="262" fill="#0f172a" fontSize="8.5" fontWeight="black" textAnchor="middle">⟨Z₃⟩</text>
+                    <line
+                      x1={needleQ3.x1}
+                      y1={needleQ3.y1}
+                      x2={needleQ3.x2}
+                      y2={needleQ3.y2}
+                      stroke="#0f172a"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      className="transition-all duration-300"
+                    />
+                    <text x="687" y="261" fill="#0f172a" fontSize="7.5" fontWeight="black" textAnchor="middle">
+                      ⟨Z₃⟩ {needleQ3.expVal}
+                    </text>
                   </g>
                 </svg>
               </div>
