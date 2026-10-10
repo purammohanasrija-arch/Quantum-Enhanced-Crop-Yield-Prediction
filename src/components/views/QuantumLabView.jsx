@@ -113,6 +113,7 @@ export default function QuantumLabView() {
         label: 'Optimal / High Yield',
         badgeText: 'Optimal Yield',
         tier: 'Tier 1 • Top 15% Regional Potential',
+        tierShort: 'Tier 1 • Optimal',
         badgeBg: 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300',
         badgeColor: 'emerald',
         description: 'Ideal quantum phase synergy: root moisture and available nitrogen are in maximum metabolic uptake zone.',
@@ -124,6 +125,7 @@ export default function QuantumLabView() {
         label: 'Moderate / Normal Yield',
         badgeText: 'Moderate Yield',
         tier: 'Tier 2 • Average Regional Benchmark',
+        tierShort: 'Tier 2 • Benchmark',
         badgeBg: 'bg-amber-950/60 border-amber-500/40 text-amber-300',
         badgeColor: 'amber',
         description: 'Commercial average: minor temperature or soil moisture deviation detected. Growth on schedule.',
@@ -135,6 +137,7 @@ export default function QuantumLabView() {
         label: 'Low / Climate Stress Alert',
         badgeText: 'At-Risk / Low',
         tier: 'Tier 3 • Sub-optimal Stress Alert',
+        tierShort: 'Tier 3 • At-Risk',
         badgeBg: 'bg-rose-950/60 border-rose-500/40 text-rose-300',
         badgeColor: 'rose',
         description: 'Drought or thermal stress detected. Quantum phase reflects significant biological yield cliff-edge penalty.',
@@ -1105,85 +1108,76 @@ c[3] = measure q[3];`;
         <div
           className={`${
             isCircuitExpanded ? 'lg:col-span-6 xl:col-span-6' : 'lg:col-span-3 xl:col-span-3'
-          } bg-[#0d1629] border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between shadow-xl shadow-slate-950/40 transition-all`}
+          } bg-[#0d1629] border border-slate-700/60 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-xl shadow-slate-950/40 transition-all`}
         >
-          <div className="space-y-3.5">
+          <div className="space-y-3">
             {/* Header with Crop Indicator */}
-            <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-800/80">
               <div>
-                <h2 className="text-lg font-bold text-white tracking-tight">Predicted Yield</h2>
-                <p className="text-[10px] text-slate-400">Quantum VQR Statevector Model</p>
+                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Predicted Yield</h2>
+                <p className="text-[10px] text-slate-400">Quantum VQR Statevector</p>
               </div>
-              <div className="flex items-center gap-1.5 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-1 rounded-full">
-                <Sprout className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-xs font-bold text-emerald-300">
+              <div className="flex items-center gap-1.5 bg-emerald-950/80 border border-emerald-500/40 px-2.5 py-1 rounded-full">
+                <Sprout className="w-3 h-3 text-emerald-400" />
+                <span className="text-xs font-semibold text-emerald-300">
                   {selectedCrop || 'Rice'}
                 </span>
-                <span className="text-[10px] text-emerald-400/70 font-semibold">(Kharif)</span>
               </div>
             </div>
 
-            {/* Glowing Mint/Green Yield Badge */}
-            <div className="bg-[#d2f9df] border border-[#a7f3d0] rounded-2xl p-4 flex items-center justify-between gap-3 shadow-lg shadow-emerald-500/10">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-xl bg-emerald-700/15 flex items-center justify-center text-emerald-700 shrink-0">
-                  <Sprout className="w-7 h-7 text-emerald-600" strokeWidth={2.5} />
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-4xl sm:text-5xl font-black text-emerald-950 tracking-tight leading-none">
-                    {predictedYield}
-                  </div>
-                  <div className="text-xs sm:text-sm font-bold text-emerald-800 tracking-tight mt-0.5">
-                    tonnes / hectare
-                  </div>
-                </div>
+            {/* Glowing Mint/Green Yield Hero Card (Clean Layout matching mockup) */}
+            <div className="bg-[#d2f9df] border border-[#a7f3d0] rounded-2xl p-4 flex items-center gap-3.5 shadow-lg shadow-emerald-500/10">
+              <div className="w-12 h-12 rounded-xl bg-emerald-700/15 flex items-center justify-center text-emerald-700 shrink-0">
+                <Sprout className="w-7 h-7 text-emerald-700" strokeWidth={2.5} />
               </div>
-              <div className="flex flex-col items-end text-right">
-                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Status</span>
-                <span className="text-xs font-black text-emerald-950 bg-emerald-200/90 px-2 py-0.5 rounded-md mt-0.5 border border-emerald-300/80">
-                  {yieldCategory.badgeText}
-                </span>
+              <div className="flex flex-col">
+                <div className="text-4xl sm:text-5xl font-black text-[#092b18] tracking-tight leading-none">
+                  {predictedYield}
+                </div>
+                <div className="text-xs sm:text-sm font-bold text-[#14532d] tracking-tight mt-1">
+                  tonnes/ha
+                </div>
               </div>
             </div>
 
             {/* YIELD CATEGORY & CLASSIFICATION TIER BOX */}
             <div className={`p-3 rounded-xl border flex flex-col gap-1.5 ${yieldCategory.badgeBg}`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 font-bold text-xs">
-                  <Award className="w-3.5 h-3.5" />
-                  <span>Category: {yieldCategory.label}</span>
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5 font-bold">
+                  <Award className="w-3.5 h-3.5 shrink-0" />
+                  <span>Category: {yieldCategory.badgeText}</span>
                 </div>
-                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-black/30">
-                  {yieldCategory.percentile}
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/30 font-mono">
+                  {yieldCategory.tierShort}
                 </span>
               </div>
-              <p className="text-[11px] opacity-85 leading-tight">
+              <p className="text-[11px] opacity-85 leading-tight truncate">
                 {yieldCategory.tier}
               </p>
 
               {/* Category Spectrum Bar */}
               <div className="mt-1 space-y-1">
-                <div className="h-2 w-full bg-slate-900/60 rounded-full overflow-hidden flex gap-0.5 p-0.5">
+                <div className="h-1.5 w-full bg-slate-900/70 rounded-full overflow-hidden flex gap-1 p-0.5">
                   <div
-                    className={`h-full rounded-l-full transition-all duration-300 ${
-                      yieldCategory.level === 'low' ? 'bg-rose-500 w-1/3 shadow-xs shadow-rose-500' : 'bg-slate-700/40 w-1/3'
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      yieldCategory.level === 'low' ? 'bg-rose-500 w-1/3' : 'bg-slate-700/40 w-1/3'
                     }`}
                   />
                   <div
                     className={`h-full transition-all duration-300 ${
-                      yieldCategory.level === 'moderate' ? 'bg-amber-400 w-1/3 shadow-xs shadow-amber-400' : 'bg-slate-700/40 w-1/3'
+                      yieldCategory.level === 'moderate' ? 'bg-amber-400 w-1/3' : 'bg-slate-700/40 w-1/3'
                     }`}
                   />
                   <div
-                    className={`h-full rounded-r-full transition-all duration-300 ${
-                      yieldCategory.level === 'high' ? 'bg-emerald-400 w-1/3 shadow-xs shadow-emerald-400' : 'bg-slate-700/40 w-1/3'
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      yieldCategory.level === 'high' ? 'bg-emerald-400 w-1/3' : 'bg-slate-700/40 w-1/3'
                     }`}
                   />
                 </div>
-                <div className="flex justify-between text-[9px] text-slate-400 font-mono">
-                  <span className={yieldCategory.level === 'low' ? 'text-rose-400 font-bold' : ''}>Low (&lt;3.2)</span>
-                  <span className={yieldCategory.level === 'moderate' ? 'text-amber-400 font-bold' : ''}>Normal (3.2–4.2)</span>
-                  <span className={yieldCategory.level === 'high' ? 'text-emerald-300 font-bold' : ''}>Optimal (&gt;4.2)</span>
+                <div className="flex justify-between text-[10px] text-slate-400 font-mono">
+                  <span className={yieldCategory.level === 'low' ? 'text-rose-400 font-bold' : ''}>&lt; 3.2 t</span>
+                  <span className={yieldCategory.level === 'moderate' ? 'text-amber-400 font-bold' : ''}>3.2–4.2 t</span>
+                  <span className={yieldCategory.level === 'high' ? 'text-emerald-300 font-bold' : ''}>&gt; 4.2 t</span>
                 </div>
               </div>
             </div>
@@ -1192,60 +1186,60 @@ c[3] = measure q[3];`;
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-[#080e1b] border border-slate-800 rounded-xl p-2.5">
                 <span className="text-[10px] text-slate-400 font-medium block">Model Output (scaled)</span>
-                <span className="text-sm font-bold text-slate-100 font-mono mt-0.5 block">{scaledOutput}</span>
+                <span className="text-base font-bold text-slate-100 font-mono mt-0.5 block">{scaledOutput}</span>
               </div>
               <div className="bg-[#080e1b] border border-slate-800 rounded-xl p-2.5">
                 <span className="text-[10px] text-slate-400 font-medium block">Total Field Output</span>
-                <span className="text-sm font-bold text-emerald-400 font-mono mt-0.5 block">
+                <span className="text-base font-bold text-emerald-400 font-mono mt-0.5 block">
                   {(Number(predictedYield) * (farmArea || 2)).toFixed(2)} tons
                 </span>
-                <span className="text-[9px] text-slate-500">for {farmArea || 2} ha plot</span>
+                <span className="text-[9px] text-slate-500 block truncate">for {farmArea || 2} ha plot</span>
               </div>
             </div>
 
             {/* DASHBOARD CONNECTION PANEL */}
-            <div className="p-3 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#0b1e2c] to-slate-900/90 border border-cyan-500/40 flex flex-col gap-2.5 shadow-md">
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-cyan-500/30 flex flex-col gap-2.5 shadow-md">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <span className="relative flex h-2 w-2">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
                   </span>
-                  <span className="text-[11px] font-bold text-cyan-200">
-                    Connected to Farm Dashboard
+                  <span className="text-xs font-semibold text-cyan-200">
+                    Dashboard Linked
                   </span>
                 </div>
-                <label className="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer select-none">
+                <label className="flex items-center gap-1.5 text-[11px] text-slate-400 cursor-pointer select-none">
                   <input
                     type="checkbox"
                     checked={autoSync}
                     onChange={(e) => setAutoSync(e.target.checked)}
                     className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-cyan-500 accent-cyan-500"
                   />
-                  <span>Live Auto-Sync</span>
+                  <span>Auto-Sync</span>
                 </label>
               </div>
 
               {/* Sync Actions */}
-              <div className="flex items-center gap-2 pt-0.5">
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleManualSync}
-                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     justSynced
-                      ? 'bg-emerald-600 text-white'
-                      : 'bg-cyan-600/25 hover:bg-cyan-600/35 text-cyan-100 border border-cyan-500/50'
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-slate-800 hover:bg-slate-750 text-cyan-300 border border-slate-700/80'
                   }`}
                 >
                   {justSynced ? (
                     <>
                       <CheckCircle2 className="w-3.5 h-3.5 text-white" />
-                      <span>Synced to Dashboard!</span>
+                      <span>Synced!</span>
                     </>
                   ) : (
                     <>
-                      <RefreshCw className="w-3.5 h-3.5 text-cyan-300" />
-                      <span>Sync to Dashboard</span>
+                      <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Sync Now</span>
                     </>
                   )}
                 </button>
@@ -1253,17 +1247,17 @@ c[3] = measure q[3];`;
                 <button
                   type="button"
                   onClick={() => setActiveTab && setActiveTab('dashboard')}
-                  className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1 transition-colors"
+                  className="flex-1 py-1.5 px-2 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/60 text-cyan-200 text-xs font-medium border border-cyan-500/40 flex items-center justify-center gap-1 transition-colors cursor-pointer"
                 >
-                  <span>Go to Dashboard</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Open Dashboard</span>
+                  <ArrowRight className="w-3 h-3 text-cyan-400" />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Bottom Status Alert */}
-          <div className="mt-4 bg-[#052622] border border-emerald-500/40 rounded-xl p-2.5 flex items-center gap-2.5">
+          <div className="mt-3 bg-[#052622] border border-emerald-500/40 rounded-xl p-2.5 flex items-center gap-2.5">
             <div className="w-4 h-4 rounded-full bg-[#10b981] flex items-center justify-center text-white shrink-0 shadow-xs shadow-emerald-500/50">
               <CheckCircle2 className="w-3 h-3 text-white" />
             </div>
