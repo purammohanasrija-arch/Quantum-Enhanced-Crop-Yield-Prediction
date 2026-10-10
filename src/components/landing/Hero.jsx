@@ -118,9 +118,9 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-xl sm:text-2xl md:text-3xl font-semibold max-w-4xl text-emerald-100/95 leading-relaxed tracking-tight mb-4"
         >
-          Quantum-Enhanced Crop Yield Prediction
+          Digital Farm Twin powered by AI and Quantum
           <span className="block font-light text-emerald-200/90 text-lg sm:text-2xl mt-1">
-            and Intelligent Farm Decision Support
+            Quantum-Enhanced Crop Yield Prediction & Intelligent Farm Decision Support
           </span>
         </motion.h2>
 

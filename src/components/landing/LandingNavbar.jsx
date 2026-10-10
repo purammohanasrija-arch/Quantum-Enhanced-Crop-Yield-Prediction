@@ -30,7 +30,7 @@ export default function LandingNavbar() {
             </span>
             <div className="flex items-center gap-1.5 text-[10px] text-cyan-300 font-mono tracking-wider uppercase">
               <Atom className="w-3 h-3 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />
-              Quantum Agritech Intelligence
+              Digital Farm Twin powered by AI & Quantum
             </div>
           </div>
         </div>

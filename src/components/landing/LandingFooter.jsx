@@ -21,8 +21,8 @@ export default function LandingFooter() {
               </span>
             </div>
             <p className="text-xs leading-relaxed text-emerald-300/70">
-              Quantum-Enhanced Crop Yield Prediction & Intelligent Farm Decision Support.
-              Empowering farmers with digital twin simulations and hybrid QML intelligence.
+              Digital Farm Twin powered by AI and Quantum.
+              Empowering farmers with quantum-enhanced crop yield predictions and digital twin simulations.
             </p>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-900/60 border border-emerald-700/50 text-[11px] text-cyan-300 font-mono">
               <Atom className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '6s' }} />

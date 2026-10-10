@@ -77,7 +77,7 @@ export default function DashboardSidebar({ mobileOpen, onCloseMobile }) {
                 <span className="text-emerald-400">TWIN</span>
               </div>
               <span className="text-[10px] text-emerald-300/80 font-mono tracking-wider uppercase block">
-                Agri-Digital Intelligence
+                Digital Farm Twin powered by AI & Quantum
               </span>
             </div>
           </div>
