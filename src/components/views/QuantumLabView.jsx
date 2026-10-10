@@ -29,21 +29,13 @@ import {
 import { useFarm } from '../../context/FarmContext';
 
 export default function QuantumLabView() {
-  // 1. Input Features State (Default matching the image exactly)
+  // 1. Input Features State (4 Quantum Register Features)
   const defaultFeatures = {
     rainfall: 850,
     temp: 28,
-    soilPh: 6.5,
     nitrogen: 80,
     soilMoisture: 35
   };
-
-  const PRESET_SCENARIOS = [
-    { label: 'Normal Baseline', desc: 'Optimal climate balance', features: { rainfall: 850, temp: 28, soilPh: 6.5, nitrogen: 80, soilMoisture: 35 } },
-    { label: 'Flash Drought', desc: 'Low moisture & rain', features: { rainfall: 420, temp: 34, soilPh: 6.8, nitrogen: 65, soilMoisture: 20 } },
-    { label: 'Heat Stress', desc: '38°C canopy spike', features: { rainfall: 650, temp: 38, soilPh: 6.4, nitrogen: 85, soilMoisture: 30 } },
-    { label: 'High Nutrients', desc: 'Elevated N-P-K', features: { rainfall: 920, temp: 27, soilPh: 6.6, nitrogen: 135, soilMoisture: 60 } },
-  ];
 
   const {
     selectedCrop,
@@ -64,35 +56,33 @@ export default function QuantumLabView() {
   const [justSynced, setJustSynced] = useState(false);
   const [copiedQasm, setCopiedQasm] = useState(false);
 
-  // Check if modified from example defaults
+  // Check if modified from defaults
   const isModified = useMemo(() => {
     return (
       features.rainfall !== defaultFeatures.rainfall ||
       features.temp !== defaultFeatures.temp ||
-      features.soilPh !== defaultFeatures.soilPh ||
       features.nitrogen !== defaultFeatures.nitrogen ||
       features.soilMoisture !== defaultFeatures.soilMoisture
     );
   }, [features]);
 
-  // Reset to exact example values
+  // Reset to default values
   const handleReset = () => {
     setFeatures(defaultFeatures);
   };
 
-  // 2. Dynamic Quantum Yield & Scaled Output calculation
-  // Calibrated so that default features yield exact image values:
+  // 2. Dynamic Quantum Yield & Scaled Output calculation (4 Qubits: Rain, Temp, N, Moisture)
+  // Calibrated so that default features yield exact project values:
   // Model Output (scaled): 0.63
   // Predicted Yield: 4.12 tonnes/ha
   const { scaledOutput, predictedYield } = useMemo(() => {
     const rainNorm = (features.rainfall - 850) / 1000;
     const tempNorm = (features.temp - 28) / 25;
-    const phNorm = 1 - Math.abs(features.soilPh - 6.5) / 3;
     const nNorm = (features.nitrogen - 80) / 120;
     const moistNorm = (features.soilMoisture - 35) / 60;
 
-    // Quantum phase expectation approximation
-    let rawScore = 0.63 + rainNorm * 0.12 - tempNorm * 0.08 + (phNorm - 1) * 0.05 + nNorm * 0.09 + moistNorm * 0.07;
+    // Quantum phase expectation approximation for 4-qubit register
+    let rawScore = 0.63 + rainNorm * 0.12 - tempNorm * 0.08 + nNorm * 0.09 + moistNorm * 0.07;
     rawScore = Math.max(0.15, Math.min(0.95, rawScore));
 
     const scaled = Number(rawScore.toFixed(2));
@@ -375,7 +365,7 @@ c[3] = measure q[3];`;
 
       {/* TOP ROW: Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* CARD 1: Input Features (Example) */}
+        {/* CARD 1: Input Features */}
         <div
           className={`${
             isCircuitExpanded ? 'lg:col-span-6 xl:col-span-6' : 'lg:col-span-3 xl:col-span-3'
@@ -384,10 +374,7 @@ c[3] = measure q[3];`;
           <div>
             {/* Header */}
             <div className="flex items-center justify-between pb-3.5">
-              <div className="flex items-baseline gap-1.5 sm:gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Input Features</h2>
-                <span className="text-[11px] sm:text-xs text-slate-400 font-normal">(Example)</span>
-              </div>
+              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">Input Features</h2>
               <button
                 onClick={() => (isModified ? handleReset() : setIsEditing(!isEditing))}
                 className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
@@ -395,7 +382,7 @@ c[3] = measure q[3];`;
                     ? 'border-cyan-500/50 bg-cyan-950/40 text-cyan-300 hover:bg-cyan-900/50 shadow-xs shadow-cyan-500/20'
                     : 'border-slate-700/80 bg-slate-800/40 text-slate-300 hover:bg-slate-700/50'
                 }`}
-                title={isModified ? 'Click to reset to example values' : 'Toggle edit mode'}
+                title={isModified ? 'Click to reset to default values' : 'Toggle edit mode'}
               >
                 {isModified ? (
                   <>
@@ -411,28 +398,8 @@ c[3] = measure q[3];`;
               </button>
             </div>
 
-            {/* Quick Scenario Presets */}
-            <div className="mb-3 pt-0.5">
-              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1.5">
-                Scenario Presets
-              </span>
-              <div className="grid grid-cols-2 gap-1.5">
-                {PRESET_SCENARIOS.map((p, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setFeatures(p.features)}
-                    className="text-[11px] px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-750 border border-slate-700/80 text-slate-300 hover:text-white transition-all text-left flex flex-col justify-center truncate group cursor-pointer hover:border-cyan-500/40"
-                    title={p.desc}
-                  >
-                    <span className="font-semibold truncate group-hover:text-cyan-300">{p.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Sliders List - Aligned to Project 4-Qubit Register (q0..q3) */}
-            <div className="space-y-3.5 pt-0.5">
+            <div className="space-y-4 pt-1">
               {/* Feature 1: Rainfall -> Qubit q0 */}
               <div className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
@@ -572,42 +539,6 @@ c[3] = measure q[3];`;
                       background: `linear-gradient(to right, #9333ea 0%, #c084fc ${
                         ((features.nitrogen - 20) / (160 - 20)) * 100
                       }%, #1e293b ${((features.nitrogen - 20) / (160 - 20)) * 100}%, #1e293b 100%)`
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Feature 5: Soil pH -> Auxiliary Agronomic Factor */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-800/70 border border-slate-700/60 flex items-center justify-center text-emerald-400 shrink-0">
-                      <Sprout className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-slate-300 font-medium text-xs sm:text-sm">Soil pH</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 border border-slate-700/60">
-                        pH
-                      </span>
-                    </div>
-                  </div>
-                  <div className="bg-[#080e1b] border border-slate-800 rounded-lg px-2 py-0.5 text-slate-100 font-mono text-xs font-semibold min-w-[46px] text-center">
-                    {features.soilPh}
-                  </div>
-                </div>
-                <div className="pl-9 pr-1">
-                  <input
-                    type="range"
-                    min="4.0"
-                    max="9.0"
-                    step="0.1"
-                    value={features.soilPh}
-                    onChange={(e) => setFeatures({ ...features, soilPh: Number(e.target.value) })}
-                    className="quantum-slider quantum-slider-blue w-full"
-                    style={{
-                      background: `linear-gradient(to right, #0284c7 0%, #38bdf8 ${
-                        ((features.soilPh - 4.0) / (9.0 - 4.0)) * 100
-                      }%, #1e293b ${((features.soilPh - 4.0) / (9.0 - 4.0)) * 100}%, #1e293b 100%)`
                     }}
                   />
                 </div>
@@ -1540,7 +1471,7 @@ c[3] = measure q[3];`;
             </div>
             <p className="text-xs text-slate-300 leading-relaxed">
               This simplified view displays the real VNQFF-03 Variational Quantum Regressor. Agricultural inputs
-              (Rainfall, Temperature, Soil pH, Nitrogen, Moisture) are encoded into qubit rotation angles via{' '}
+              (Rainfall, Temperature, Soil Moisture, Nitrogen) are encoded into qubit rotation angles via{' '}
               <strong className="text-teal-400">Feature Encoding Gates</strong>. The circuit then undergoes{' '}
               <strong className="text-purple-400">Trainable Ry/Rz Unitary Rotations</strong> coupled with{' '}
               <strong className="text-cyan-400">CNOT Entanglement</strong> to discover non-linear agronomic dependencies.
