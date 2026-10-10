@@ -650,19 +650,6 @@ c[3] = measure q[3];`;
               </div>
             </div>
 
-            {/* Circuit Telemetry Strip */}
-            <div className="my-2.5 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/80 flex flex-wrap items-center justify-between text-[11px] text-slate-300 font-mono gap-2">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-cyan-400"></span>
-                <span><strong>4 Qubits</strong> (2⁴ = 16 States)</span>
-              </span>
-              <span>Depth: <strong className="text-purple-300">14</strong></span>
-              <span>Gates: <strong className="text-cyan-300">28</strong></span>
-              <span>Ansatz: <strong className="text-emerald-300">TwoLocal</strong></span>
-              <span>Params: <strong className="text-pink-300">16 (θ)</strong></span>
-              <span>Observable: <strong className="text-amber-300">⟨∑ Z_j⟩</strong></span>
-            </div>
-
             {/* VIEW MODE 1: DIAGRAM (Authentic 4-Qubit Project Architecture) */}
             {circuitView === 'diagram' && (
               <div className="relative pt-2 pb-1 w-full flex items-center justify-center overflow-x-auto">
