@@ -57,6 +57,8 @@ export default function QuantumLabView() {
   const [autoSync, setAutoSync] = useState(true);
   const [copiedQasm, setCopiedQasm] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [justSynced, setJustSynced] = useState(false);
+  const isInitialRender = React.useRef(true);
 
   // Trigger quantum pulse execution on manual click or input change
   const triggerQuantumExecution = () => {
@@ -65,6 +67,10 @@ export default function QuantumLabView() {
   };
 
   useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
     setIsExecuting(true);
     const timer = setTimeout(() => setIsExecuting(false), 550);
     return () => clearTimeout(timer);
