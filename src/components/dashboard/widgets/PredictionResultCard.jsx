@@ -20,17 +20,30 @@ export default function PredictionResultCard() {
             </div>
             <h3 className="font-bold text-slate-900 text-sm">Prediction Result</h3>
           </div>
-          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-            {selectedCrop}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {predictionData.isQuantumSynced && (
+              <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-full border border-purple-200 flex items-center gap-1">
+                <span>⚛️</span>
+                <span>Quantum Synced</span>
+              </span>
+            )}
+            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              {selectedCrop}
+            </span>
+          </div>
         </div>
 
         {/* Visual Crop Header Banner */}
         <div className="relative rounded-2xl p-4 bg-gradient-to-r from-emerald-800 to-green-700 text-white overflow-hidden shadow-sm mb-4">
           <div className="relative z-10">
-            <span className="text-[11px] font-semibold text-emerald-200 uppercase tracking-wider block">
-              Predicted Crop Yield
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-emerald-200 uppercase tracking-wider block">
+                Predicted Crop Yield
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-950/60 text-emerald-200 border border-emerald-400/30">
+                {predictionData.yieldTier || 'Tier 1 • Optimal'}
+              </span>
+            </div>
             <div className="mt-1 flex items-baseline gap-2">
               <span className="text-3xl sm:text-4xl font-extrabold tracking-tight">
                 <AnimatedCounter value={predictionData.predictedYield} decimals={2} />
@@ -40,10 +53,15 @@ export default function PredictionResultCard() {
               </span>
             </div>
 
-            <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/40 border border-emerald-400/30 text-emerald-200 text-xs font-bold">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-300" />
-              <span>{predictionData.previousSeasonDiff || '+8.2%'}</span>
-              <span className="text-[10px] text-emerald-300/80 font-normal">(vs prev season)</span>
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/50 border border-emerald-400/30 text-emerald-200 text-xs font-bold">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{predictionData.previousSeasonDiff || '+8.2%'}</span>
+                <span className="text-[10px] text-emerald-300/80 font-normal">(vs prev season)</span>
+              </div>
+              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-white/20 text-white backdrop-blur-xs border border-white/30">
+                {predictionData.yieldCategory || 'Optimal / High Yield'}
+              </span>
             </div>
           </div>
         </div>

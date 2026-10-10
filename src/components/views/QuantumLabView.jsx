@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CloudRain,
@@ -18,8 +18,12 @@ import {
   BarChart3,
   Cpu,
   Maximize2,
-  Minimize2
+  Minimize2,
+  Award,
+  RefreshCw,
+  ArrowRight
 } from 'lucide-react';
+import { useFarm } from '../../context/FarmContext';
 
 export default function QuantumLabView() {
   // 1. Input Features State (Default matching the image exactly)
@@ -31,12 +35,23 @@ export default function QuantumLabView() {
     soilMoisture: 35
   };
 
+  const {
+    selectedCrop,
+    setSelectedCrop,
+    farmArea,
+    syncQuantumPrediction,
+    setActiveTab,
+    predictionData
+  } = useFarm();
+
   const [features, setFeatures] = useState(defaultFeatures);
   const [isEditing, setIsEditing] = useState(false);
   const [circuitView, setCircuitView] = useState('diagram'); // 'diagram' | 'blocks'
   const [isCircuitExpanded, setIsCircuitExpanded] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [hoveredIteration, setHoveredIteration] = useState(null);
+  const [autoSync, setAutoSync] = useState(true);
+  const [justSynced, setJustSynced] = useState(false);
 
   // Check if modified from example defaults
   const isModified = useMemo(() => {
@@ -78,6 +93,70 @@ export default function QuantumLabView() {
       predictedYield: yieldTonnes.toFixed(2)
     };
   }, [features]);
+
+  // 3. Agronomic Yield Classification & Category Analysis
+  const yieldCategory = useMemo(() => {
+    const y = parseFloat(predictedYield) || 4.51;
+    if (y >= 4.2) {
+      return {
+        label: 'Optimal / High Yield',
+        badgeText: 'Optimal Yield',
+        tier: 'Tier 1 • Top 15% Regional Potential',
+        badgeBg: 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300',
+        badgeColor: 'emerald',
+        description: 'Ideal quantum phase synergy: root moisture and available nitrogen are in maximum metabolic uptake zone.',
+        percentile: '88% Potential',
+        level: 'high',
+      };
+    } else if (y >= 3.2) {
+      return {
+        label: 'Moderate / Normal Yield',
+        badgeText: 'Moderate Yield',
+        tier: 'Tier 2 • Average Regional Benchmark',
+        badgeBg: 'bg-amber-950/60 border-amber-500/40 text-amber-300',
+        badgeColor: 'amber',
+        description: 'Commercial average: minor temperature or soil moisture deviation detected. Growth on schedule.',
+        percentile: '65% Potential',
+        level: 'moderate',
+      };
+    } else {
+      return {
+        label: 'Low / Climate Stress Alert',
+        badgeText: 'At-Risk / Low',
+        tier: 'Tier 3 • Sub-optimal Stress Alert',
+        badgeBg: 'bg-rose-950/60 border-rose-500/40 text-rose-300',
+        badgeColor: 'rose',
+        description: 'Drought or thermal stress detected. Quantum phase reflects significant biological yield cliff-edge penalty.',
+        percentile: '40% Potential',
+        level: 'low',
+      };
+    }
+  }, [predictedYield]);
+
+  // Synchronize with FarmContext Dashboard automatically if autoSync is active
+  useEffect(() => {
+    if (autoSync && syncQuantumPrediction) {
+      syncQuantumPrediction({
+        predictedYield,
+        scaledOutput,
+        features,
+        crop: selectedCrop
+      });
+    }
+  }, [predictedYield, scaledOutput, features, autoSync, selectedCrop]);
+
+  const handleManualSync = () => {
+    if (syncQuantumPrediction) {
+      syncQuantumPrediction({
+        predictedYield,
+        scaledOutput,
+        features,
+        crop: selectedCrop
+      });
+      setJustSynced(true);
+      setTimeout(() => setJustSynced(false), 2200);
+    }
+  };
 
   // 3. Training Progress Logarithmic Dataset (Converging to 0.0031 at 100 iterations)
   const trainingData = [
@@ -703,46 +782,173 @@ export default function QuantumLabView() {
           </div>
         </div>
 
-        {/* CARD 3: Predicted Yield */}
+        {/* CARD 3: Predicted Yield (with Category & Dashboard Connection) */}
         <div
           className={`${
             isCircuitExpanded ? 'lg:col-span-6 xl:col-span-6' : 'lg:col-span-3 xl:col-span-3'
           } bg-[#0d1629] border border-slate-700/60 rounded-2xl p-5 flex flex-col justify-between shadow-xl shadow-slate-950/40 transition-all`}
         >
-          <div>
-            {/* Header */}
-            <h2 className="text-lg font-bold text-white tracking-tight pb-3">Predicted Yield</h2>
+          <div className="space-y-3.5">
+            {/* Header with Crop Indicator */}
+            <div className="flex items-center justify-between pb-1 border-b border-slate-800/80">
+              <div>
+                <h2 className="text-lg font-bold text-white tracking-tight">Predicted Yield</h2>
+                <p className="text-[10px] text-slate-400">Quantum VQR Statevector Model</p>
+              </div>
+              <div className="flex items-center gap-1.5 bg-emerald-950/70 border border-emerald-500/30 px-2.5 py-1 rounded-full">
+                <Sprout className="w-3.5 h-3.5 text-emerald-400" />
+                <span className="text-xs font-bold text-emerald-300">
+                  {selectedCrop || 'Rice'}
+                </span>
+                <span className="text-[10px] text-emerald-400/70 font-semibold">(Kharif)</span>
+              </div>
+            </div>
 
             {/* Glowing Mint/Green Yield Badge */}
-            <div className="bg-[#d2f9df] border border-[#a7f3d0] rounded-2xl p-4.5 flex items-center justify-center gap-3.5 shadow-lg shadow-emerald-500/10">
-              <Sprout className="w-10 h-10 text-emerald-600 shrink-0" strokeWidth={2.5} />
-              <div className="flex flex-col">
-                <div className="text-4xl sm:text-5xl font-black text-emerald-950 tracking-tight leading-none">
-                  {predictedYield}
+            <div className="bg-[#d2f9df] border border-[#a7f3d0] rounded-2xl p-4 flex items-center justify-between gap-3 shadow-lg shadow-emerald-500/10">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-700/15 flex items-center justify-center text-emerald-700 shrink-0">
+                  <Sprout className="w-7 h-7 text-emerald-600" strokeWidth={2.5} />
                 </div>
-                <div className="text-sm sm:text-base font-bold text-emerald-800 tracking-tight mt-0.5">
-                  tonnes/ha
+                <div className="flex flex-col">
+                  <div className="text-4xl sm:text-5xl font-black text-emerald-950 tracking-tight leading-none">
+                    {predictedYield}
+                  </div>
+                  <div className="text-xs sm:text-sm font-bold text-emerald-800 tracking-tight mt-0.5">
+                    tonnes / hectare
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-end text-right">
+                <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Status</span>
+                <span className="text-xs font-black text-emerald-950 bg-emerald-200/90 px-2 py-0.5 rounded-md mt-0.5 border border-emerald-300/80">
+                  {yieldCategory.badgeText}
+                </span>
+              </div>
+            </div>
+
+            {/* YIELD CATEGORY & CLASSIFICATION TIER BOX */}
+            <div className={`p-3 rounded-xl border flex flex-col gap-1.5 ${yieldCategory.badgeBg}`}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5 font-bold text-xs">
+                  <Award className="w-3.5 h-3.5" />
+                  <span>Category: {yieldCategory.label}</span>
+                </div>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-black/30">
+                  {yieldCategory.percentile}
+                </span>
+              </div>
+              <p className="text-[11px] opacity-85 leading-tight">
+                {yieldCategory.tier}
+              </p>
+
+              {/* Category Spectrum Bar */}
+              <div className="mt-1 space-y-1">
+                <div className="h-2 w-full bg-slate-900/60 rounded-full overflow-hidden flex gap-0.5 p-0.5">
+                  <div
+                    className={`h-full rounded-l-full transition-all duration-300 ${
+                      yieldCategory.level === 'low' ? 'bg-rose-500 w-1/3 shadow-xs shadow-rose-500' : 'bg-slate-700/40 w-1/3'
+                    }`}
+                  />
+                  <div
+                    className={`h-full transition-all duration-300 ${
+                      yieldCategory.level === 'moderate' ? 'bg-amber-400 w-1/3 shadow-xs shadow-amber-400' : 'bg-slate-700/40 w-1/3'
+                    }`}
+                  />
+                  <div
+                    className={`h-full rounded-r-full transition-all duration-300 ${
+                      yieldCategory.level === 'high' ? 'bg-emerald-400 w-1/3 shadow-xs shadow-emerald-400' : 'bg-slate-700/40 w-1/3'
+                    }`}
+                  />
+                </div>
+                <div className="flex justify-between text-[9px] text-slate-400 font-mono">
+                  <span className={yieldCategory.level === 'low' ? 'text-rose-400 font-bold' : ''}>Low (&lt;3.2)</span>
+                  <span className={yieldCategory.level === 'moderate' ? 'text-amber-400 font-bold' : ''}>Normal (3.2–4.2)</span>
+                  <span className={yieldCategory.level === 'high' ? 'text-emerald-300 font-bold' : ''}>Optimal (&gt;4.2)</span>
                 </div>
               </div>
             </div>
 
-            {/* Scaled Output Box */}
-            <div className="mt-4 space-y-1.5">
-              <label className="text-xs text-slate-400 font-medium">Model Output (scaled)</label>
-              <div className="w-full bg-[#080e1b] border border-slate-800 rounded-xl px-4 py-2.5 text-slate-100 font-mono text-base font-semibold">
-                {scaledOutput}
+            {/* Model Output (scaled) & Total Production Grid */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="bg-[#080e1b] border border-slate-800 rounded-xl p-2.5">
+                <span className="text-[10px] text-slate-400 font-medium block">Model Output (scaled)</span>
+                <span className="text-sm font-bold text-slate-100 font-mono mt-0.5 block">{scaledOutput}</span>
+              </div>
+              <div className="bg-[#080e1b] border border-slate-800 rounded-xl p-2.5">
+                <span className="text-[10px] text-slate-400 font-medium block">Total Field Output</span>
+                <span className="text-sm font-bold text-emerald-400 font-mono mt-0.5 block">
+                  {(Number(predictedYield) * (farmArea || 2)).toFixed(2)} tons
+                </span>
+                <span className="text-[9px] text-slate-500">for {farmArea || 2} ha plot</span>
+              </div>
+            </div>
+
+            {/* DASHBOARD CONNECTION PANEL */}
+            <div className="p-3 rounded-xl bg-gradient-to-r from-slate-900/90 via-[#0b1e2c] to-slate-900/90 border border-cyan-500/40 flex flex-col gap-2.5 shadow-md">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+                  </span>
+                  <span className="text-[11px] font-bold text-cyan-200">
+                    Connected to Farm Dashboard
+                  </span>
+                </div>
+                <label className="flex items-center gap-1.5 text-[10px] text-slate-300 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={autoSync}
+                    onChange={(e) => setAutoSync(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-800 text-cyan-500 accent-cyan-500"
+                  />
+                  <span>Live Auto-Sync</span>
+                </label>
+              </div>
+
+              {/* Sync Actions */}
+              <div className="flex items-center gap-2 pt-0.5">
+                <button
+                  type="button"
+                  onClick={handleManualSync}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm ${
+                    justSynced
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-cyan-600/25 hover:bg-cyan-600/35 text-cyan-100 border border-cyan-500/50'
+                  }`}
+                >
+                  {justSynced ? (
+                    <>
+                      <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                      <span>Synced to Dashboard!</span>
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 text-cyan-300" />
+                      <span>Sync to Dashboard</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setActiveTab && setActiveTab('dashboard')}
+                  className="py-1.5 px-3 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 flex items-center gap-1 transition-colors"
+                >
+                  <span>Go to Dashboard</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
+                </button>
               </div>
             </div>
           </div>
 
           {/* Bottom Status Alert */}
-          <div className="mt-5 bg-[#052622] border border-emerald-500/40 rounded-xl p-3 flex items-center gap-3">
-            <div className="w-5 h-5 rounded-full bg-[#10b981] flex items-center justify-center text-white shrink-0 shadow-xs shadow-emerald-500/50">
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
+          <div className="mt-4 bg-[#052622] border border-emerald-500/40 rounded-xl p-2.5 flex items-center gap-2.5">
+            <div className="w-4 h-4 rounded-full bg-[#10b981] flex items-center justify-center text-white shrink-0 shadow-xs shadow-emerald-500/50">
+              <CheckCircle2 className="w-3 h-3 text-white" />
             </div>
-            <p className="text-xs text-emerald-200 font-medium leading-snug">
+            <p className="text-[11px] text-emerald-200 font-medium leading-snug">
               Prediction completed using VQR model (simulator)
             </p>
           </div>

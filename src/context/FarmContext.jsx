@@ -47,10 +47,18 @@ export function FarmProvider({ children }) {
     predictedYield: 4.52,
     unit: 'tons/ha',
     totalProduction: 9.04,
-    confidence: 92,
+    confidence: 94,
     previousSeasonDiff: '+8.2%',
     growthStage: 'Vegetative',
     isPredicting: false,
+    yieldCategory: 'Optimal / High Yield',
+    yieldTier: 'Tier 1 • Top 15% Regional',
+    yieldCategoryColor: 'emerald',
+    yieldPotentialPct: 88,
+    source: 'Quantum VQR (IBM Qiskit)',
+    scaledOutput: 0.69,
+    isQuantumSynced: true,
+    lastSyncedTime: 'Just now',
   });
 
   const [farmHealthScore, setFarmHealthScore] = useState(87);
@@ -140,6 +148,66 @@ export function FarmProvider({ children }) {
     return res;
   };
 
+  // Synchronize Quantum Lab prediction with the main farm dashboard
+  const syncQuantumPrediction = ({ predictedYield, scaledOutput, features, crop }) => {
+    const yieldNum = Number(parseFloat(predictedYield).toFixed(2)) || 4.51;
+    const scaledNum = Number(parseFloat(scaledOutput).toFixed(2)) || 0.69;
+    const area = farmArea || 2;
+    const totalProd = Number((yieldNum * area).toFixed(2));
+
+    // Determine yield category & tier based on agronomic thresholds
+    let category = 'Optimal / High Yield';
+    let tier = 'Tier 1 • Top 15% Regional';
+    let color = 'emerald';
+    let potentialPct = 88;
+
+    if (yieldNum >= 4.2) {
+      category = 'Optimal / High Yield';
+      tier = 'Tier 1 • Top 15% Regional';
+      color = 'emerald';
+      potentialPct = Math.min(98, Math.round(80 + (yieldNum - 4.2) * 15));
+    } else if (yieldNum >= 3.2) {
+      category = 'Moderate / Good Yield';
+      tier = 'Tier 2 • Average Regional';
+      color = 'amber';
+      potentialPct = Math.round(60 + (yieldNum - 3.2) * 20);
+    } else {
+      category = 'Low / Climate Stress Alert';
+      tier = 'Tier 3 • At-Risk Deficit';
+      color = 'rose';
+      potentialPct = Math.max(30, Math.round(yieldNum * 15));
+    }
+
+    setPredictionData((prev) => ({
+      ...prev,
+      predictedYield: yieldNum,
+      totalProduction: totalProd,
+      confidence: 94,
+      yieldCategory: category,
+      yieldTier: tier,
+      yieldCategoryColor: color,
+      yieldPotentialPct: potentialPct,
+      source: 'Quantum VQR (IBM Qiskit)',
+      scaledOutput: scaledNum,
+      isQuantumSynced: true,
+      lastSyncedTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    }));
+
+    if (features) {
+      setFarmInputs((prev) => ({
+        ...prev,
+        rainfall: features.rainfall !== undefined ? features.rainfall : prev.rainfall,
+        temp: features.temp !== undefined ? features.temp : prev.temp,
+        soilMoisture: features.soilMoisture !== undefined ? features.soilMoisture : prev.soilMoisture,
+        nitrogen: features.nitrogen !== undefined ? features.nitrogen : prev.nitrogen,
+      }));
+    }
+
+    if (crop) {
+      setSelectedCrop(crop);
+    }
+  };
+
   // Switch to dashboard and specific sub-view
   const navigateToDashboard = (tab = 'dashboard') => {
     setCurrentPage('dashboard');
@@ -174,6 +242,8 @@ export function FarmProvider({ children }) {
 
         // Predictions & KPIs
         predictionData,
+        setPredictionData,
+        syncQuantumPrediction,
         triggerPrediction,
         farmHealthScore,
         healthSubScores,
