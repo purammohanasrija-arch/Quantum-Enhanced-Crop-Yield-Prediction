@@ -1125,30 +1125,46 @@ c[3] = measure q[3];`;
               </div>
             </div>
 
-            {/* Glowing Mint/Green Yield Hero Card (Clean Layout matching mockup) */}
-            <div className="bg-[#d2f9df] border border-[#a7f3d0] rounded-2xl p-4 flex items-center gap-3.5 shadow-lg shadow-emerald-500/10">
-              <div className="w-12 h-12 rounded-xl bg-emerald-700/15 flex items-center justify-center text-emerald-700 shrink-0">
-                <Sprout className="w-7 h-7 text-emerald-700" strokeWidth={2.5} />
-              </div>
-              <div className="flex flex-col">
-                <div className="text-4xl sm:text-5xl font-black text-[#092b18] tracking-tight leading-none">
-                  {predictedYield}
+            {/* Glowing Mint/Green Yield Hero Card with Correct, Non-overflowing Layout */}
+            <div className="bg-[#d2f9df] border border-[#a7f3d0] rounded-2xl p-3.5 sm:p-4 shadow-lg shadow-emerald-500/10 flex flex-col gap-2.5">
+              {/* Top Row: STATUS Label & Clean Category Badge */}
+              <div className="flex items-center justify-between pb-2 border-b border-emerald-700/15">
+                <span className="text-[10px] font-black text-emerald-900/70 uppercase tracking-widest">
+                  STATUS
+                </span>
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100/90 border border-emerald-400/60 text-emerald-950 text-xs font-bold shadow-xs">
+                  <span className={`w-1.5 h-1.5 rounded-full ${
+                    yieldCategory.level === 'high' ? 'bg-emerald-600' : yieldCategory.level === 'moderate' ? 'bg-emerald-600' : 'bg-rose-600'
+                  }`} />
+                  <span>{yieldCategory.badgeText}</span>
                 </div>
-                <div className="text-xs sm:text-sm font-bold text-[#14532d] tracking-tight mt-1">
-                  tonnes/ha
+              </div>
+
+              {/* Main Metric Row: Sprout Icon + Large Yield Value + Unit */}
+              <div className="flex items-center gap-3 pt-0.5">
+                <div className="w-12 h-12 rounded-xl bg-emerald-700/15 flex items-center justify-center text-emerald-700 shrink-0">
+                  <Sprout className="w-7 h-7 text-emerald-700" strokeWidth={2.5} />
+                </div>
+                <div className="flex flex-col">
+                  <div className="text-4xl sm:text-5xl font-black text-[#082918] tracking-tight leading-none">
+                    {predictedYield}
+                  </div>
+                  <div className="text-xs sm:text-sm font-bold text-[#14532d] tracking-tight mt-1">
+                    tonnes / hectare
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* YIELD CATEGORY & CLASSIFICATION TIER BOX */}
+            {/* YIELD BENCHMARK & REGIONAL SPECTRUM */}
             <div className={`p-3 rounded-xl border flex flex-col gap-1.5 ${yieldCategory.badgeBg}`}>
               <div className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5 font-bold">
                   <Award className="w-3.5 h-3.5 shrink-0" />
-                  <span>Category: {yieldCategory.badgeText}</span>
+                  <span>Regional Benchmark</span>
                 </div>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/30 font-mono">
-                  {yieldCategory.tierShort}
+                  {yieldCategory.percentile}
                 </span>
               </div>
               <p className="text-[11px] opacity-85 leading-tight truncate">
